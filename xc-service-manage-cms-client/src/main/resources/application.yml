@@ -1,0 +1,36 @@
+#  层级之间空2格，key-value之间空1格
+#  spring.data.mongodb.uri=mongodb://root(userName):root(password)@localhost(ip地址):27017(端口号)/gis(collections/数据库)
+server:
+  port: 31000
+spring:
+  application:
+    name: xc‐service‐manage‐cms-client
+  # mongodb
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017
+      database: xc_cms
+  # rabbitmq
+  rabbitmq:
+    host: 127.0.0.1
+    username: guest
+    password: guest
+    port: 5672
+    virtual-host: virtual-host-abc
+    publisher-confirms: true  # 开启发送确认
+    publisher-returns: true   # 开启发送失败退回
+    listener:   # 开启ACK
+      simple:
+        acknowledge-mode: manual
+    #      direct:
+    #        acknowledge-mode: manual
+    template:
+      mandatory: true  #保证监听有效，为true时,消息通过交换器无法匹配到队列会触发确认后回调(confirm方法)给生产者，为false不会
+    # 重试，超时时间、次数etc
+
+
+# 客户端自定义配置 避免代码写死
+xuecheng:
+  mq:
+    queue: queue-cms-postpage_01
+    routingKey: 5a751fab6abb5044e0d19ea1 #门户站点id，生产方必需参数

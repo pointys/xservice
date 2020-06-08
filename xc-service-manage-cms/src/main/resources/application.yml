@@ -1,0 +1,45 @@
+#  层级之间空2格，key-value之间空1格
+#  spring.data.mongodb.uri=mongodb://root(userName):root(password)@localhost(ip地址):27017(端口号)/gis(collections/数据库)
+server:
+  port: ${PORT:31001}
+spring:
+  application:
+    name: xc-service-manage-cms
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017
+      database: xc_cms
+
+  # rabbitmq
+  rabbitmq:
+    host: 127.0.0.1
+    username: guest
+    password: guest
+    port: 5672
+    virtual-host: virtual-host-abc
+    publisher-confirms: true  # 开启发送确认
+    publisher-returns: true   # 开启发送失败退回
+    listener:   # 开启ACK
+      simple:
+        acknowledge-mode: manual
+    #      direct:
+    #        acknowledge-mode: manual
+    template:
+      mandatory: true  #保证监听有效，为true时,消息通过交换器无法匹配到队列会触发确认后回调(confirm方法)给生产者，为false不会
+    # 重试，超时时间、次数etc
+
+  freemarker:
+    cache: false #关闭缓存方便测试
+    settings:
+      template_update_delay: 0
+
+eureka:
+  client:
+    registerWithEureka: true #服务注册开关
+    fetchRegistry: true #服务发现开关
+    serviceUrl: #Eureka客户端与Eureka服务端进行交互的地址，多个中间用逗号分隔
+      defaultZone: ${EUREKA_SERVER:http://localhost:50101/eureka/,http://localhost:50102/eureka/}
+  instance:
+    prefer-ip-address:  true  #将自己的ip地址注册到Eureka服务中
+    ip-address: ${IP_ADDRESS:127.0.0.1}
+    instance-id: ${spring.application.name}:${server.port} #指定实例id
