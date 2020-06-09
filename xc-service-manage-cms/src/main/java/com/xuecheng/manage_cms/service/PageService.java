@@ -41,6 +41,7 @@ import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
@@ -201,7 +202,7 @@ public class PageService {
             if (save != null) {
                 //返回成功
                 CmsPageResult cmsPageResult = new CmsPageResult(CommonCode.SUCCESS, save);
-                log.info("--------------"+cmsPageResult.toString());
+                log.info("--------------" + cmsPageResult.toString());
                 return cmsPageResult;
             }
         }
@@ -443,27 +444,42 @@ public class PageService {
      * 保存或更新cms_page
      * 先页面静态化再将静态化文件保存到Gridfs
      * rabbitmq发送
+     *
      * @param pageId
      * @return
      */
-    public CmsPostPageResult postPageQuick(CmsPage upCmsPage){
+    @Transactional
+    public CmsPostPageResult postPageQuick(CmsPage upCmsPage) {
         //1.保存or更新
         CmsPageResult cmsPageResult = this.save(upCmsPage);
-        if(!cmsPageResult.isSuccess()){
+        if (!cmsPageResult.isSuccess()) {
             MyException.throwException(CommonCode.FAIL);
         }
         //更新后的信息
         CmsPage cmsPage = cmsPageResult.getCmsPage();
-        String pageId =cmsPage.getPageId();
+        String pageId = cmsPage.getPageId();
         ResponseResult responseResult = this.post(pageId);
-        if(!responseResult.isSuccess()){
+        if (!responseResult.isSuccess()) {
             MyException.throwException(CommonCode.FAIL);
         }
 
-        //2.拼接url
+        //2.拼接服务器存放静态页面的物理路径url
         String siteId = cmsPage.getSiteId();
-
+        CmsSite cmsSite = this.findCmsSiteById(siteId);
+        String pageUrl=cmsSite.getSiteDomain()+cmsSite.getSiteWebPath()+cmsPage.getPageWebPath()+cmsPage.getPageName();
+        return new CmsPostPageResult(CommonCode.SUCCESS,pageUrl);
     }
 
-public CmsSite
+    /**
+     * 根据主键获取站点信息
+     * @param siteId
+     * @return
+     */
+    public CmsSite findCmsSiteById(String siteId) {
+        Optional<CmsSite> optional = cmsSiteRepository.findById(siteId);
+        if(!optional.isPresent()){
+            return null;
+        }
+        return optional.get();
+    }
 }

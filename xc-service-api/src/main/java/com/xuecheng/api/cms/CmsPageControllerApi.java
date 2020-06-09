@@ -43,5 +43,5 @@ public interface CmsPageControllerApi {
     public ResponseResult post(String pageId);
 
     @ApiOperation("一键发布")
-    public CmsPostPageResult postPageQuick(String pageId);
+    public CmsPostPageResult postPageQuick(CmsPage cmsPage);
 }

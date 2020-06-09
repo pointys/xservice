@@ -32,5 +32,5 @@ spring:
 # 客户端自定义配置 避免代码写死
 xuecheng:
   mq:
-    queue: queue-cms-postpage_01
-    routingKey: 5a751fab6abb5044e0d19ea1 #门户站点id，生产方必需参数
+    queue: queue-cms-postpage_03 #每个cms-client客户端都不一样
+    routingKey: 5a751fab6abb5044e0d191e5 #门户站点id，生产方必需参数

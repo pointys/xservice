@@ -50,10 +50,17 @@ public class PageService {
     //保存html页面到服务器物理页面
     public void savePageToServerPath(String pagId) {
         CmsPage cmsPage = this.findCmsPageByPageId(pagId);
-
+        if(cmsPage==null){
+            log.info("----空的cmsPage，pagId：："+pagId);
+            MyException.throwException(CommonCode.FAIL);
+        }
         //获取站点的物理路径
         String siteId = cmsPage.getSiteId();
         CmsSite cmsSite = this.findCmsSiteByPageId(siteId);
+        if(cmsPage==null){
+            log.info("----空的cmsSite，siteId：："+siteId);
+            MyException.throwException(CommonCode.FAIL);
+        }
         String sitePhysicalPath = cmsSite.getSitePhysicalPath();
         //获取页面的物理路径
         String pagePath = sitePhysicalPath + cmsPage.getPagePhysicalPath() + cmsPage.getPageName();
