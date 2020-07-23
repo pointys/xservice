@@ -12,10 +12,10 @@ import java.util.List;
  */
 public class HlsVideoUtil extends  VideoUtil {
 
-    String ffmpeg_path = "D:\\Program Files\\ffmpeg-20180227-fa0c9d6-win64-static\\bin\\ffmpeg.exe";//ffmpeg的安装位置
-    String video_path = "D:\\BaiduNetdiskDownload\\test1.avi";
-    String m3u8_name = "test1.m3u8";
-    String m3u8folder_path = "D:/BaiduNetdiskDownload/Movies/test1/";
+    String ffmpeg_path;//ffmpeg的安装位置
+    String video_path;
+    String m3u8_name;
+    String m3u8folder_path;
     public HlsVideoUtil(String ffmpeg_path, String video_path, String m3u8_name,String m3u8folder_path){
         super(ffmpeg_path);
         this.ffmpeg_path = ffmpeg_path;

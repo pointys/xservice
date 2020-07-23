@@ -1,3 +1,5 @@
+logback-spring.xml、yml配置相关路径
+静态资源路径：D:/workspace/static/
 rabbitmq：
     交换机 路由 队列
 1.先声明交换机、队列、交换机和队列通过路由key的绑定关系

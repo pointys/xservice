@@ -1,12 +1,10 @@
 package com.xuecheng.manage_course.service;
 
+import com.alibaba.fastjson.JSON;
 import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.response.CmsPageResult;
 import com.xuecheng.framework.domain.cms.response.CmsPostPageResult;
-import com.xuecheng.framework.domain.course.CourseBase;
-import com.xuecheng.framework.domain.course.CourseMarket;
-import com.xuecheng.framework.domain.course.CoursePic;
-import com.xuecheng.framework.domain.course.Teachplan;
+import com.xuecheng.framework.domain.course.*;
 import com.xuecheng.framework.domain.course.ext.CourseView;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.response.CourseCode;
@@ -22,11 +20,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +58,11 @@ public class CourseService {
     CourseMarketRepository courseMarketRepository;
     @Autowired
     CmsPageclient cmsPageclient;
+    @Autowired
+    CoursePubRepository coursePubRepository;
+    @Autowired
+    TeachplanMediaRepository teachplanMediaRepository;
+
     @Value("${course-publish.dataUrlPre}")
     private String publish_dataUrlPre;
     @Value("${course-publish.pagePhysicalPath}")
@@ -232,16 +246,58 @@ public class CourseService {
         }
         //将课程发布状态设置为已发布
         courseBase = this.updateCourseStatus(id);
-        log.info("修改后的课程基本信息："+courseBase.toString());
-        if(courseBase==null){
-            return new CoursePublicResult(CommonCode.FAIL,null);
+        log.info("修改后的课程基本信息：" + courseBase.toString());
+        if (courseBase == null) {
+            return new CoursePublicResult(CommonCode.FAIL, null);
         }
 
         //保存课程索引信息
+        CoursePub coursePub = createCoursePub(id,true);
+        log.info("保存的coursePub信息为："+coursePub.toString());
+        //缓存课程信息
+
         String pageUrl = cmsPostPageResult.getPageUrl();
-        log.info("pageUrl:"+pageUrl);
+        log.info("pageUrl:" + pageUrl);
         log.info(cmsPage.toString());
-        return new CoursePublicResult(CommonCode.SUCCESS,pageUrl);
+        return new CoursePublicResult(CommonCode.SUCCESS, pageUrl);
+    }
+
+    //创建coursePub对象,合成总表导入es
+    public CoursePub createCoursePub(String id, boolean isSave) {
+        CoursePub coursePub = new CoursePub();
+
+        //1.课程营销信息
+        Optional<CourseBase> optionalCourseBase = courseBaseRepository.findById(id);
+        if (optionalCourseBase.isPresent()) {
+            CourseBase courseBase = optionalCourseBase.get();
+            BeanUtils.copyProperties(courseBase, coursePub);
+        }
+
+        //2.课程图片信息
+        Optional<CoursePic> optionalCoursePic = coursePicRepository.findById(id);
+        if(optionalCoursePic.isPresent()){
+            CoursePic coursePic = optionalCoursePic.get();
+            BeanUtils.copyProperties(coursePic,coursePub);
+        }
+
+        //3.课程营销信息
+        Optional<CourseMarket> optionalCourseMarket = courseMarketRepository.findById(id);
+        if(optionalCourseMarket.isPresent()){
+            CourseMarket courseMarket = optionalCourseMarket.get();
+            BeanUtils.copyProperties(courseMarket,coursePub);
+        }
+
+        //4.课程计划信息
+        TeachplanNode teachplanNode = teachPlanMapper.selectList(id);
+        String json = JSON.toJSONString(teachplanNode);
+        coursePub.setTeachplan(json);
+        //logstash需要时间
+        coursePub.setTimestamp(new Date());//时间戳
+        coursePub.setPubTime(new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()));//发布时间
+        if (isSave) {
+            coursePubRepository.save(coursePub);
+        }
+        return coursePub;
     }
 
     //更新课程状态码为已发布
@@ -250,6 +306,40 @@ public class CourseService {
         CourseBase courseBase = this.findCourseBaseById(courseId);
         courseBase.setStatus("202002");
         return courseBaseRepository.save(courseBase);
+    }
+
+    //分页查询
+    public Page<CourseBase> findCourseBaseNoCriteria(Integer page, Integer size) {
+        Pageable pageable = new PageRequest(page, size, Sort.Direction.ASC, "id");
+        return courseBaseRepository.findAll(pageable);
+    }
+
+    public ResponseResult saveMedia(TeachplanMedia teachplanMedia) {
+            if (teachplanMedia == null || StringUtils.isEmpty(teachplanMedia.getTeachplanId())) {
+                MyException.throwException(CommonCode.INVALID_PARAM);
+            }
+            //校验课程计划等级是否为三级（不允许在父节点保存视频文件）
+            Optional<Teachplan> optional = teachPlanRepository.findById(teachplanMedia.getTeachplanId());
+            if (!optional.isPresent()) {
+                MyException.throwException(CommonCode.INVALID_PARAM);
+            }
+            Teachplan teachplan = optional.get();
+            if (StringUtils.isEmpty(teachplan.getGrade()) || !"3".equals(teachplan.getGrade())) {
+                MyException.throwException(CourseCode.COURSE_GET_NOTEXISTS);
+            }
+            Optional<TeachplanMedia> mediaOptional = teachplanMediaRepository.findById(teachplanMedia.getTeachplanId());
+            if (mediaOptional.isPresent()) {
+                teachplanMedia = mediaOptional.get();
+                log.info("已存在的数据："+teachplanMedia.toString());
+                return new ResponseResult(CommonCode.REPEAT);
+            }else{
+                //数据库没查到
+                teachplanMedia.setCourseId(teachplan.getCourseid());
+                teachplanMedia.setTeachplanId(teachplan.getId());
+                teachplanMediaRepository.save(teachplanMedia);
+                log.info("保存的数据："+teachplanMedia.toString());
+                return new ResponseResult(CommonCode.SUCCESS);
+            }
     }
 }
 

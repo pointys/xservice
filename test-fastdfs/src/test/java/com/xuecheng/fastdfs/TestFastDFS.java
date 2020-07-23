@@ -43,10 +43,10 @@ public class TestFastDFS {
             StorageClient1 storageClient1 = new StorageClient1(trackerServer,storeStorage);
             //向stroage服务器上传文件
             //本地文件的路径
-            String upload_filePath = "d:/img/y.png";
+            String upload_filePath = "d:/img/7.png";
 //            String download_filePath = "d:/y.png";
             //上传成功后拿到文件Id
-            String fileId = storageClient1.upload_file1(upload_filePath, "mp4", null);
+            String fileId = storageClient1.upload_file1(upload_filePath, "png", null);
             System.out.println("上传文件id："+fileId);
             //通过文件id下载文件
           /*  byte[] bytes = storageClient1.download_file1(fileId);

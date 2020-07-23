@@ -1,6 +1,8 @@
 package com.xuecheng.framework.domain.course;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -16,6 +18,8 @@ import java.io.Serializable;
 @Table(name="course_base")
 //@GenericGenerator(name = "jpa-assigned", strategy = "assigned")
 @GenericGenerator(name = "jpa-uuid", strategy = "uuid")
+@NoArgsConstructor
+@AllArgsConstructor
 public class CourseBase implements Serializable {
     private static final long serialVersionUID = -916357110051689486L;
     @Id

@@ -2,23 +2,27 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="test-rabbitmq-customer" />
-        <module name="test-fastdfs" />
-        <module name="xc-govern-center" />
-        <module name="xc-framework-common" />
-        <module name="xc-framework-utils" />
-        <module name="test-rabbitmq-producer" />
+        <module name="xc-service-manage-course" />
         <module name="xc-framework-model" />
-        <module name="xc-service-manage-cms" />
-        <module name="test‐freemarker" />
+        <module name="xc-framework-utils" />
         <module name="xc-service-api" />
         <module name="xc-service-base-filesystem" />
-        <module name="xc-service-manage-course" />
+        <module name="test-rabbitmq-producer" />
+        <module name="xc-framework-common" />
+        <module name="test‐freemarker" />
+        <module name="xc-govern-center" />
+        <module name="test-fastdfs" />
+        <module name="xc-service-manage-media" />
+        <module name="xc-service-manage-cms" />
+        <module name="xc-service-search" />
         <module name="xc-service-manage-cms-client" />
+        <module name="xc-service-manage-media-processor" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -37,6 +41,9 @@
       <module name="xc-service-manage-cms" target="1.8" />
       <module name="xc-service-manage-cms-client" target="1.8" />
       <module name="xc-service-manage-course" target="1.8" />
+      <module name="xc-service-manage-media" target="1.8" />
+      <module name="xc-service-manage-media-processor" target="1.8" />
+      <module name="xc-service-search" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -55,6 +62,9 @@
       <module name="xc-service-manage-cms" options="-parameters" />
       <module name="xc-service-manage-cms-client" options="-parameters" />
       <module name="xc-service-manage-course" options="-parameters" />
+      <module name="xc-service-manage-media" options="-parameters" />
+      <module name="xc-service-manage-media-processor" options="-parameters" />
+      <module name="xc-service-search" options="-parameters" />
     </option>
   </component>
 </project>

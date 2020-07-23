@@ -15,4 +15,10 @@ public class TeachplanNode extends Teachplan {
     //在父属性Teachplan的基础上拓展一个children属性
     List<TeachplanNode> children;
 
+    //媒资文件id
+    String mediaId;
+
+    //媒资文件原始信息
+    String mediaFileOriginalName;
+
 }

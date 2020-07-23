@@ -15,6 +15,7 @@ public enum CommonCode implements ResultCode {
     //分别对应CommonCode构造方法
     INVALID_PARAM(false, 10003, "非法参数"),
     SUCCESS(true, 10000, "操作成功！"),
+    REPEAT(true, 10001, "数据已存在！"),
     FAIL(false, 11111, "操作失败！"),
     UNAUTHENTICATED(false, 10001, "此操作需要登陆系统！"),
     UNAUTHORISE(false, 10002, "权限不足，无权操作！"),

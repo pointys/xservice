@@ -43,7 +43,7 @@ public class RabbitmqConfig {
     }
 
     /**
-     * 队列与交换机通过路由key绑定
+     * 路由key绑定队列与交换机
      *
      * @param queue    从spring容器中找到id为queue_inform_sms的bean
      * @param exchange 从spring容器中找到id为exchange_topics_inform的bean
@@ -56,7 +56,7 @@ public class RabbitmqConfig {
     }
 
     /**
-     * 通过路由key绑定交换机与队列
+     * 通过路由key绑定队列与交换机
      * @Qualifier(x)
      * @param queue bean的id为QUEUE_INFORM_EMAIL的Queue
      * @param exchange bean的id为QUEUE_INFORM_EMAIL的Queue
