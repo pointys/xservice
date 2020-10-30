@@ -34,10 +34,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author 韩浩辰
@@ -62,6 +59,8 @@ public class CourseService {
     CoursePubRepository coursePubRepository;
     @Autowired
     TeachplanMediaRepository teachplanMediaRepository;
+    @Autowired
+    TeachplanMediaPubRepository teachplanMediaPubRepository;
 
     @Value("${course-publish.dataUrlPre}")
     private String publish_dataUrlPre;
@@ -252,14 +251,34 @@ public class CourseService {
         }
 
         //保存课程索引信息
-        CoursePub coursePub = createCoursePub(id,true);
-        log.info("保存的coursePub信息为："+coursePub.toString());
+        CoursePub coursePub = createCoursePub(id, true);
+        log.info("保存的coursePub信息为：" + coursePub.toString());
         //缓存课程信息
 
         String pageUrl = cmsPostPageResult.getPageUrl();
         log.info("pageUrl:" + pageUrl);
         log.info(cmsPage.toString());
+        //向TeachplanMediaPub保存媒资信息,logstash定时扫描该表，根据时间戳更新到es查询索引库
+        this.saveTeachplanMediaPub(id);
         return new CoursePublicResult(CommonCode.SUCCESS, pageUrl);
+    }
+
+    //向TeachplanMediaPub保存TeachplanMedia的信息，插之前先删除防止重复
+        public void saveTeachplanMediaPub(String courseId) {
+        teachplanMediaPubRepository.deleteByCourseId(courseId);
+        //将根据课程id查到的TeachplanMedia列表插入TeachplanMediaPub表
+        List<TeachplanMedia> teachplanMediaList = teachplanMediaRepository.findByCourseId(courseId);
+        ArrayList<TeachplanMediaPub> teachplanMediaPubList = new ArrayList<>();
+        for (TeachplanMedia teachplanMedia : teachplanMediaList) {
+            TeachplanMediaPub teachplanMediaPub = new TeachplanMediaPub();
+            BeanUtils.copyProperties(teachplanMedia, teachplanMediaPub);
+            teachplanMediaPub.setTimestamp(new Date());//时间戳
+            teachplanMediaPubList.add(teachplanMediaPub);
+        }
+        teachplanMediaPubList.forEach(x -> {
+            log.info("-----------" + x.toString());
+        });
+        teachplanMediaPubRepository.saveAll(teachplanMediaPubList);
     }
 
     //创建coursePub对象,合成总表导入es
@@ -275,16 +294,16 @@ public class CourseService {
 
         //2.课程图片信息
         Optional<CoursePic> optionalCoursePic = coursePicRepository.findById(id);
-        if(optionalCoursePic.isPresent()){
+        if (optionalCoursePic.isPresent()) {
             CoursePic coursePic = optionalCoursePic.get();
-            BeanUtils.copyProperties(coursePic,coursePub);
+            BeanUtils.copyProperties(coursePic, coursePub);
         }
 
         //3.课程营销信息
         Optional<CourseMarket> optionalCourseMarket = courseMarketRepository.findById(id);
-        if(optionalCourseMarket.isPresent()){
+        if (optionalCourseMarket.isPresent()) {
             CourseMarket courseMarket = optionalCourseMarket.get();
-            BeanUtils.copyProperties(courseMarket,coursePub);
+            BeanUtils.copyProperties(courseMarket, coursePub);
         }
 
         //4.课程计划信息
@@ -315,31 +334,31 @@ public class CourseService {
     }
 
     public ResponseResult saveMedia(TeachplanMedia teachplanMedia) {
-            if (teachplanMedia == null || StringUtils.isEmpty(teachplanMedia.getTeachplanId())) {
-                MyException.throwException(CommonCode.INVALID_PARAM);
-            }
-            //校验课程计划等级是否为三级（不允许在父节点保存视频文件）
-            Optional<Teachplan> optional = teachPlanRepository.findById(teachplanMedia.getTeachplanId());
-            if (!optional.isPresent()) {
-                MyException.throwException(CommonCode.INVALID_PARAM);
-            }
-            Teachplan teachplan = optional.get();
-            if (StringUtils.isEmpty(teachplan.getGrade()) || !"3".equals(teachplan.getGrade())) {
-                MyException.throwException(CourseCode.COURSE_GET_NOTEXISTS);
-            }
-            Optional<TeachplanMedia> mediaOptional = teachplanMediaRepository.findById(teachplanMedia.getTeachplanId());
-            if (mediaOptional.isPresent()) {
-                teachplanMedia = mediaOptional.get();
-                log.info("已存在的数据："+teachplanMedia.toString());
-                return new ResponseResult(CommonCode.REPEAT);
-            }else{
-                //数据库没查到
-                teachplanMedia.setCourseId(teachplan.getCourseid());
-                teachplanMedia.setTeachplanId(teachplan.getId());
-                teachplanMediaRepository.save(teachplanMedia);
-                log.info("保存的数据："+teachplanMedia.toString());
-                return new ResponseResult(CommonCode.SUCCESS);
-            }
+        if (teachplanMedia == null || StringUtils.isEmpty(teachplanMedia.getTeachplanId())) {
+            MyException.throwException(CommonCode.INVALID_PARAM);
+        }
+        //校验课程计划等级是否为三级（不允许在父节点保存视频文件）
+        Optional<Teachplan> optional = teachPlanRepository.findById(teachplanMedia.getTeachplanId());
+        if (!optional.isPresent()) {
+            MyException.throwException(CommonCode.INVALID_PARAM);
+        }
+        Teachplan teachplan = optional.get();
+        if (StringUtils.isEmpty(teachplan.getGrade()) || !"3".equals(teachplan.getGrade())) {
+            MyException.throwException(CourseCode.COURSE_GET_NOTEXISTS);
+        }
+        Optional<TeachplanMedia> mediaOptional = teachplanMediaRepository.findById(teachplanMedia.getTeachplanId());
+        if (mediaOptional.isPresent()) {
+            teachplanMedia = mediaOptional.get();
+            log.info("已存在的数据：" + teachplanMedia.toString());
+            return new ResponseResult(CommonCode.REPEAT);
+        } else {
+            //数据库没查到
+            teachplanMedia.setCourseId(teachplan.getCourseid());
+            teachplanMedia.setTeachplanId(teachplan.getId());
+            teachplanMediaRepository.save(teachplanMedia);
+            log.info("保存的数据：" + teachplanMedia.toString());
+            return new ResponseResult(CommonCode.SUCCESS);
+        }
     }
 }
 

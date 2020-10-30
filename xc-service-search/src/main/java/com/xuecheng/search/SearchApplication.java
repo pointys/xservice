@@ -3,12 +3,14 @@ package com.xuecheng.search;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
  * @author 韩浩辰
  * @date 2020/6/11 18:22
  */
+@EnableDiscoveryClient
 @SpringBootApplication
 @EntityScan("com.xuecheng.framework.domain.search")//扫描实体类
 @ComponentScan(basePackages={"com.xuecheng.api"})//扫描接口

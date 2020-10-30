@@ -26,6 +26,9 @@ public class ExceptionCatch {
     public ResponseResult exception(Exception e) {
         //自定义异常
         if (e instanceof MyException) {
+            System.out.println("-----");
+            e.printStackTrace();
+            System.out.println("-----");
             log.error("进入自定义异常捕获类", e.getMessage());
             ResultCode resultCode = ((MyException) e).getResultCode();
             return new ResponseResult(resultCode);

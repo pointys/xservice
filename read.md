@@ -18,5 +18,15 @@ rabbitmq：
 
 
 
+生产环境创建索引与导入文档：
+1.ruby环境、mysql版本驱动
+2.写模板引擎（索引）、logstash执行脚本根据时间戳查询course_pub记录(建议改成项目中的定时器去执行，第三方脚本增加复杂度)
+3.遇到的问题：可以创建索引并连接数据库但是向es导入数据报error级别错误，异常为ElasticsearchStatusException[Elasticsearch exception [type=cluster_block_exception, reason=index [xc_course] blocked by: [FORBIDDEN/12/index read-only / allow delete (api)];]，
+该问题解决方法为：利用elasticsearch-head插件中的复合查询功能填写以下参数：http://47.111.242.221:9200/_all(所有索引，这里可指定单个索引名)   _settings    PUT    {"index.blocks.read_only_allow_delete":null}这四个参数后提交请求，若返回"acknowledged": true则ojbk
 
+
+第三方的启动：
+--1.elastic插件：在D:\elasticsearch-head目录下打开cmd窗口，执行npm run start
+--2.logstash：在D:\elasticsearch\logstash-7.4.2\bin目录下打开cmd窗口，执行logstash.bat -f ../config/mysql.conf
+logstash.bat -f ../config/mysql_course_media.conf
 
