@@ -1,4 +1,3 @@
-git提交本地form local
 git提交远程
 
 logback-spring.xml、yml配置相关路径
