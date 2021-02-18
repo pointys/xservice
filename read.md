@@ -1,4 +1,5 @@
 git提交本地form local
+git提交远程
 
 logback-spring.xml、yml配置相关路径
 静态资源路径：D:/workspace/static/
