@@ -1,3 +1,5 @@
+git提交
+
 logback-spring.xml、yml配置相关路径
 静态资源路径：D:/workspace/static/
 rabbitmq：
@@ -29,4 +31,14 @@ rabbitmq：
 --1.elastic插件：在D:\elasticsearch-head目录下打开cmd窗口，执行npm run start
 --2.logstash：在D:\elasticsearch\logstash-7.4.2\bin目录下打开cmd窗口，执行logstash.bat -f ../config/mysql.conf
 logstash.bat -f ../config/mysql_course_media.conf
+
+
+
+bug:
+1.day12:xc-ui-pc-portal启动无法访问
+
+
+p291 start
+
+
 
