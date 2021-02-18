@@ -26,7 +26,7 @@ public class SendJob implements RabbitTemplate.ConfirmCallback, RabbitTemplate.R
         this.rabbitTemplate.setReturnCallback(this);
 
         //发送消息，参数：交换机、路由key、消息内容、CorrelationData(全局唯一，根据该值找到消息)
-        Order order = new Order("贺友义", "0.1厘米");
+        Order order = new Order("贺友义", "1.80米");
         rabbitTemplate.convertAndSend(RabbitmqConfig.EXCHANGE_TOPICS_INFORM, "inform.sms.email", order,new CorrelationData(radom_value));
         System.out.println("---Send Message is:'" + order + "'");
     }
